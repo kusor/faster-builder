@@ -26,14 +26,15 @@ class FasterBuilder::XmlMarkup < BlankSlate
     @options = options
     @nodes   = []
     @current_node = nil
+    @encoding = XML::Encoding::UTF_8
   end
   
   def instruct!(type = :xml, attrs = {})
     raise Builder::IllegalBlockError, "Blocks are not allowed on XML instructions" if block_given?
     version  = attrs[:version]  || "1.0"
-    encoding = attrs[:encoding] || "UTF-8"
+    encoding = attrs[:encoding] || XML::Encoding::UTF_8
     @doc = XML::Document.new(version)
-    @doc.encoding = encoding
+    @encoding = @doc.encoding = encoding
   end
   
   def cdata!(data)
@@ -90,7 +91,7 @@ class FasterBuilder::XmlMarkup < BlankSlate
   end
   
   def target!
-    return (@doc.nil? ? @nodes : [@doc] + @nodes).map { |n| n.to_s }.join("")
+    return (@doc.nil? ? @nodes : [@doc] + @nodes).map { |n| n.to_s(:encoding => @encoding) }.join("")
   end
   
   def text!(text)
